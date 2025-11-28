@@ -7,7 +7,7 @@ spec:
   - name: nginx
     image: nginx
     resources:
-      request:
+      requests:
         memory: "68Mi"
         cpu: "100m" # 1/10th of cpu
       # prove equal or than requests
