@@ -1,45 +1,54 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ebs-dynamic
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: roboshop-ebs
-  resources:
-    requests:
-      storage: 4Gi
----
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: nginx
+  # these are replica set labels
   labels:
-    purpose: ebs-dynamic
+    purpose: dp-demo
+    project: roboshop
 spec:
-  containers:
-  - name: nginx
-    image: nginx
-    volumeMounts:
-    - name: nginx-html
-      mountPath: /usr/share/nginx/html
-  # nodeSelector:
-  #   topology.kubernetes.io/zone: us-east-1b
-  volumes:
-  - name: nginx-html
-    persistentVolumeClaim:
-      claimName: ebs-dynamic
+  replicas: 4
+  selector:
+    # these labels are used to select pods
+    matchLabels:
+      purpose: headless-svc-demo
+      project: roboshop
+  # pod definition
+  template:
+    metadata:
+      labels:
+        # purpose: dp-demo
+        purpose: headless-svc-demo
+        project: roboshop
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-ebs-dynamic
+  name: nginx
 spec:
-  type: LoadBalancer
   selector:
-    purpose: ebs-dynamic
+    purpose: headless-svc-demo
+    project: roboshop
   ports:
     - protocol: TCP
       port: 80 # service port
       targetPort: 80 # container port
-      nodePort: 30007 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-headles
+spec:
+  # if a service clusterIP then it is called as headless service
+  clusterIP: None
+  selector:
+    purpose: headless-svc-demo
+    project: roboshop
+  ports:
+    - protocol: TCP
+      port: 80 # service port
+      targetPort: 80 # container port
