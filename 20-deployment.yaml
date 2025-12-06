@@ -11,15 +11,44 @@ spec:
   selector:
     # these labels are used to select pods
     matchLabels:
-      purpose: dp-demo
+      purpose: headless-svc-demo
       project: roboshop
   # pod definition
   template:
     metadata:
       labels:
-        purpose: dp-demo
+        # purpose: dp-demo
+        purpose: headless-svc-demo
         project: roboshop
     spec:
       containers:
       - name: nginx
         image: nginx:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  selector:
+    purpose: headless-svc-demo
+    project: roboshop
+  ports:
+    - protocol: TCP
+      port: 80 # service port
+      targetPort: 80 # container port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-headles
+spec:
+  # if a service clusterIP then it is called as headless service
+  clusterIP: None
+  selector:
+    purpose: headless-svc-demo
+    project: roboshop
+  ports:
+    - protocol: TCP
+      port: 80 # service port
+      targetPort: 80 # container port
