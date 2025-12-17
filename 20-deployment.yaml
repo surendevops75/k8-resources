@@ -30,6 +30,7 @@ kind: Service
 metadata:
   name: nginx
 spec:
+  type: LoadBalancer
   selector:
     purpose: headless-svc-demo
     project: roboshop
